@@ -6,7 +6,7 @@ const port = 3000; // You can choose any available port
 app.get('/', (req, res) => {
   res.json({
     message: "Hello World",
-    name: "Dimas Roger W", 
+    name: "Dimas Roger Widianto", 
   });
 });
 
