@@ -14,7 +14,8 @@ services:
       - /usr/local/bin/docker:/usr/local/bin/docker # Mount Docker binary (opsional, tergantung setup)
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
-
+    group_add:
+      - "999"
   # Aplikasi Express.js Anda (ini hanya untuk development/testing manual, CI/CD akan men-deploy-nya)
   # Anda bisa uncomment ini jika ingin menjalankan aplikasi secara terpisah dari Jenkins
   app:
