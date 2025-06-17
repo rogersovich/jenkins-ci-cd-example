@@ -23,7 +23,9 @@ pipeline {
             steps {
                 script {
                     // Pastikan Dockerfile ada di root proyek
-                    sh "docker build -t ${env.LOCAL_DOCKER_IMAGE} ."
+                    docker.image('docker:dind').inside {
+                        sh 'docker build -t ${env.LOCAL_DOCKER_IMAGE} .'
+                    }
                     echo "Docker image ${env.LOCAL_DOCKER_IMAGE} built successfully."
                 }
             }
