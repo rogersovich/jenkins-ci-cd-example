@@ -24,7 +24,6 @@ pipeline {
                 script {
                     // Pastikan Dockerfile ada di root proyek
                    sh 'whoami' // Check the user running the command
-                    sh 'docker --version' // Verify Docker CLI
                     sh 'ls -l' // Check workspace permissions
                     sh 'cat Dockerfile' // Verify Dockerfile exists
                     sh 'docker build -t ${LOCAL_DOCKER_IMAGE} .'
