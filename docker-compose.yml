@@ -4,6 +4,7 @@ services:
   jenkins:
     image: jenkins/jenkins:lts-jdk11 # Menggunakan Jenkins LTS dengan OpenJDK 11
     privileged: true                  # Penting agar Jenkins bisa berinteraksi dengan Docker host
+    user: "root"
     ports:
       - "8080:8080"                   # UI Jenkins
       - "50000:50000"                 # Port untuk Jenkins agent (jika diperlukan)
