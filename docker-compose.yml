@@ -4,7 +4,6 @@ services:
   jenkins:
     image: jenkins/jenkins:lts-jdk11 # Menggunakan Jenkins LTS dengan OpenJDK 11
     privileged: true                  # Penting agar Jenkins bisa berinteraksi dengan Docker host
-    # user: root                        # Menjalankan sebagai root untuk kemudahan akses Docker (hati-hati di produksi)
     ports:
       - "8080:8080"                   # UI Jenkins
       - "50000:50000"                 # Port untuk Jenkins agent (jika diperlukan)
@@ -15,8 +14,6 @@ services:
       - /usr/local/bin/docker:/usr/local/bin/docker # Mount Docker binary (opsional, tergantung setup)
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
-    group_add:
-      - "staff"
 
   # Aplikasi Express.js Anda (ini hanya untuk development/testing manual, CI/CD akan men-deploy-nya)
   # Anda bisa uncomment ini jika ingin menjalankan aplikasi secara terpisah dari Jenkins
