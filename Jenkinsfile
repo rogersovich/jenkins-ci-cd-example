@@ -3,9 +3,9 @@ pipeline {
 
     environment {
         // Nama image lokal yang akan kita gunakan
-        LOCAL_DOCKER_IMAGE = 'hello-express-local:latest'
+        LOCAL_DOCKER_IMAGE = 'jenkins-ci-cd-example-app:latest'
         // Nama container yang akan dijalankan di host
-        CONTAINER_NAME = 'hello-express-container-local'
+        CONTAINER_NAME = 'hello-express-dev'
     }
 
     stages {
