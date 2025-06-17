@@ -18,15 +18,15 @@ services:
 
   # Aplikasi Express.js Anda (ini hanya untuk development/testing manual, CI/CD akan men-deploy-nya)
   # Anda bisa uncomment ini jika ingin menjalankan aplikasi secara terpisah dari Jenkins
-  # app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: hello-express-dev
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - jenkins # Aplikasi Anda tidak tergantung Jenkins, ini hanya contoh
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hello-express-dev
+    ports:
+      - "3000:3000"
+    depends_on:
+      - jenkins # Aplikasi Anda tidak tergantung Jenkins, ini hanya contoh
 
 volumes:
   jenkins_home:
