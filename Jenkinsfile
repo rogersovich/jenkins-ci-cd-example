@@ -19,7 +19,7 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build Image') {
             steps {
                 script {
                     // Membuat nama tag unik menggunakan BUILD_NUMBER Jenkins
@@ -34,7 +34,7 @@ pipeline {
             }
         }
 
-        stage('Deploy Docker Container') {
+        stage('Deploy Container') {
             steps {
                 script {
                     // Hentikan dan hapus container lama jika ada
@@ -50,7 +50,7 @@ pipeline {
             }
         }
 
-        stage('Cleanup Old Docker Images') {
+        stage('Cleanup Old Images') {
             steps {
                 script {
                     echo "Cleaning up old Docker images..."
