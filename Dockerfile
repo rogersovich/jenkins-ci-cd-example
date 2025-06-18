@@ -1,28 +1,21 @@
-# Gunakan Node.js image resmi sebagai base image.
-# node:18-alpine adalah versi Node.js 18 yang berbasis Alpine Linux, sangat ringan.
+# Gunakan base image Node.js LTS
 FROM node:18-alpine
 
-# Set direktori kerja di dalam container.
-# Semua perintah COPY dan RUN selanjutnya akan dieksekusi di direktori ini.
+# Setel direktori kerja di dalam container
 WORKDIR /app
 
-# Salin file package.json dan package-lock.json ke direktori kerja.
-# Ini dilakukan secara terpisah untuk memanfaatkan caching layer Docker.
-# Jika hanya file-file ini yang berubah, langkah npm install tidak perlu diulang.
+# Salin package.json dan package-lock.json (jika ada)
+# Ini dilakukan terpisah agar layer ini di-cache jika dependensi tidak berubah
 COPY package*.json ./
 
-# Jalankan npm install untuk menginstal dependensi produksi.
-# --production memastikan hanya dependensi yang diperlukan untuk runtime yang diinstal.
-RUN npm install --production
+# Instal dependensi
+RUN npm install
 
-# Salin sisa kode aplikasi Anda ke direktori kerja.
-# Perintah ini dijalankan setelah dependensi terinstal.
+# Salin sisa kode aplikasi Anda
 COPY . .
 
-# Beri tahu Docker bahwa container akan mendengarkan di port 3000 pada runtime.
-# Ini hanyalah deklarasi, bukan memublikasikan port secara otomatis.
+# Expose port yang digunakan aplikasi Express di dalam container
 EXPOSE 3000
 
-# Perintah default yang akan dijalankan saat container dimulai.
-# Dalam kasus ini, menjalankan script 'start' yang didefinisikan di package.json Anda.
+# Perintah untuk menjalankan aplikasi ketika container dimulai
 CMD ["npm", "start"]

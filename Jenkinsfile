@@ -2,55 +2,73 @@ pipeline {
     agent any
 
     environment {
-        // Nama image lokal yang akan kita gunakan
-        LOCAL_DOCKER_IMAGE = 'jenkins-ci-cd-example-app:latest'
-        // Nama container yang akan dijalankan di host
-        CONTAINER_NAME = 'hello-express-dev'
+        // Nama aplikasi Docker Anda
+        APP_NAME = 'simple-express-app'
+        // Port host yang akan mapping ke port internal container (3000)
+        HOST_PORT = '3333'
+        // Port internal container yang diekspos di Dockerfile
+        CONTAINER_PORT = '3000'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Karena kita menjalankan dari direktori proyek, tidak perlu git clone lagi.
-                // Jenkins secara otomatis bekerja di direktori SCM.
-                echo 'Skipping Git checkout for local build.'
-                // Jika Anda benar-benar ingin Jenkins melakukan checkout, Anda bisa pakai:
-                // git branch: 'main', url: 'https://github.com/your-github-username/your-repo-name.git'
-                // (tapi pastikan Jenkinsfile ini ada di root repo dan Anda set SCM di Jenkins Job)
+                git branch: 'main', url: 'https://github.com/rogersovich/jenkins-ci-cd-example.git'
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Pastikan Dockerfile ada di root proyek
-                    sh "docker build -t ${LOCAL_DOCKER_IMAGE} ."
-                    
-                    echo "Docker image ${env.LOCAL_DOCKER_IMAGE} built successfully."
+                    // Membuat nama tag unik menggunakan BUILD_NUMBER Jenkins
+                    def dockerImageTag = "${APP_NAME}:${env.BUILD_NUMBER}"
+                    echo "Building Docker image: ${dockerImageTag}"
+                    sh "docker build -t ${dockerImageTag} ."
+                    echo "Docker image built successfully!"
                 }
             }
         }
-        stage('Run Docker Container Locally') {
+
+        stage('Deploy Docker Container') {
             steps {
                 script {
-                    sh "docker stop ${env.CONTAINER_NAME} || true" // Hentikan container lama
-                    sh "docker rm ${env.CONTAINER_NAME} || true"   // Hapus container lama
+                    // Hentikan dan hapus container lama jika ada
+                    echo "Stopping and removing old container (if exists)..."
+                    sh "docker stop ${APP_NAME} || true" // '|| true' agar tidak error jika container tidak ada
+                    sh "docker rm ${APP_NAME} || true"
 
-                    // Jalankan container baru, memetakan port aplikasi (3000)
-                    sh "docker run -d --name ${env.CONTAINER_NAME} -p 3000:3000 ${env.LOCAL_DOCKER_IMAGE}"
-                    echo "Docker container ${env.CONTAINER_NAME} started on port 3000."
+                    // Jalankan container baru
+                    echo "Running new Docker container..."
+                    sh "docker run -d --name ${APP_NAME} -p ${HOST_PORT}:${CONTAINER_PORT} ${APP_NAME}:${env.BUILD_NUMBER}"
+                    echo "Docker container deployed successfully on port ${HOST_PORT}!"
+                }
+            }
+        }
+
+        stage('Cleanup Old Docker Images') {
+            steps {
+                script {
+                    // Opsional: Hapus image Docker lama untuk menghemat ruang disk
+                    echo "Cleaning up old Docker images..."
+                    sh "docker image prune -f --filter 'label=jenkins-build-id'" // Contoh filter, bisa disesuaikan
+                    // Atau yang lebih agresif (hati-hati):
+                    // sh "docker rmi \$(docker images -q ${APP_NAME} | grep -v ${env.BUILD_NUMBER}) || true"
+                    echo "Old Docker images cleaned."
                 }
             }
         }
     }
+
     post {
         always {
-            echo 'Local CI/CD Pipeline finished.'
+            // Notifikasi selalu
+            echo "Pipeline finished for ${APP_NAME}."
         }
         success {
-            echo 'Local build and run successful!'
+            echo "Deployment successful!"
         }
         failure {
-            echo 'Local build or run failed. Check logs.'
+            echo "Deployment failed! Check build logs for errors."
         }
     }
 }
