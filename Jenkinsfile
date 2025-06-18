@@ -4,10 +4,10 @@ pipeline {
     environment {
         // Nama aplikasi Docker Anda
         APP_NAME = 'simple-express-app'
-        // Port host yang akan mapping ke port internal container (3000)
+        // Port host yang akan mapping ke port internal container
         HOST_PORT = '3333'
         // Port internal container yang diekspos di Dockerfile
-        CONTAINER_PORT = '3000'
+        CONTAINER_PORT = '3333'
         // Definisi label untuk identifikasi image Jenkins
         JENKINS_LABEL_KEY = 'jenkins-build-id'
     }
