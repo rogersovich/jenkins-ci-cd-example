@@ -1,21 +1,25 @@
-# Gunakan base image Node.js LTS
-FROM node:18-alpine
+# Stage 1: Build stage
+FROM node:18-alpine AS build
 
-# Setel direktori kerja di dalam container
 WORKDIR /app
 
-# Salin package.json dan package-lock.json (jika ada)
-# Ini dilakukan terpisah agar layer ini di-cache jika dependensi tidak berubah
 COPY package*.json ./
+RUN npm install --omit=dev # Hanya instal dependensi produksi
+# Jika Anda memiliki build step (misalnya, transpiling TypeScript, bundling React/Vue app):
+# RUN npm run build
 
-# Instal dependensi
-RUN npm install
-
-# Salin sisa kode aplikasi Anda
+# Salin kode aplikasi
 COPY . .
 
-# Expose port yang digunakan aplikasi Express di dalam container
-EXPOSE 3000
+# Stage 2: Production stage (menggunakan base image yang lebih kecil)
+FROM node:18-alpine # Bisa juga pakai node:18-slim-alpine atau distroless jika sangat ekstrem
 
-# Perintah untuk menjalankan aplikasi ketika container dimulai
+WORKDIR /app
+
+# Salin hanya yang dibutuhkan dari build stage
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/app.js ./ # Salin app.js atau file hasil build Anda
+COPY --from=build /app/package.json ./ # package.json untuk script start
+
+EXPOSE 3000
 CMD ["npm", "start"]
