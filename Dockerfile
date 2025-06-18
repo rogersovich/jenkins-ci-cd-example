@@ -1,3 +1,5 @@
+# MULTI STAGE
+
 # Stage 1: Build stage
 FROM node:18-alpine AS build
 
