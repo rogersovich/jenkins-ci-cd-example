@@ -53,21 +53,33 @@ pipeline {
         stage('Cleanup Old Docker Images') {
             steps {
                 script {
-                    // Opsional: Hapus image Docker lama untuk menghemat ruang disk
                     echo "Cleaning up old Docker images..."
 
-                    // 1. Membersihkan image dengan label Jenkins yang tidak sesuai dengan BUILD_NUMBER saat ini
-                    //    Ini akan menghapus image yang dibuat oleh Jenkins di build sebelumnya
-                    def imagesWithOldLabels = sh(returnStdout: true, script: """
-                        docker images --filter 'label=${JENKINS_LABEL_KEY}' --format '{{.ID}}' | xargs -r docker inspect --format '{{.RepoTags}} {{.Config.Labels.${JENKINS_LABEL_KEY}}}' | \
-                        awk -v current_build="${env.BUILD_NUMBER}" '\$2 != current_build { print \$1 }'
-                    """).trim()
+                    // Dapatkan semua tag image untuk APP_NAME
+                    def allTags = sh(returnStdout: true, script: "docker images --format '{{.Tag}}' ${APP_NAME}").trim().split('\n')
+                    def imagesToRemove = []
 
-                    if (imagesWithOldLabels) {
-                        echo "Found images with old Jenkins build labels to remove: ${imagesWithOldLabels}"
-                        sh "docker rmi ${imagesWithOldLabels} || true"
+                    // Iterasi melalui setiap tag
+                    allTags.each { tag ->
+                        // Pastikan tag adalah angka dan kurang dari BUILD_NUMBER saat ini
+                        try {
+                            if (tag.isInteger() && tag.toInteger() < env.BUILD_NUMBER.toInteger()) {
+                                imagesToRemove.add("${APP_NAME}:${tag}")
+                            }
+                        } catch (NumberFormatException e) {
+                            // Abaikan tag yang bukan angka (misal: "latest" atau tag lain)
+                            echo "Skipping non-numeric tag: ${tag}"
+                        }
+                    }
+
+                     if (imagesToRemove) {
+                        echo "Found old images to remove: ${imagesToRemove.join(' ')}"
+                        // Hapus image yang teridentifikasi
+                        // Gunakan -f (force) agar tidak ada konfirmasi
+                        sh "docker rmi -f ${imagesToRemove.join(' ')} || true"
+                        echo "Old images cleaned."
                     } else {
-                        echo "No old Jenkins-labeled images found to remove."
+                        echo "No old images found with tags less than ${env.BUILD_NUMBER}."
                     }
 
                     // 2. Membersihkan dangling images (image tanpa tag atau tidak terkait container/image lain)
